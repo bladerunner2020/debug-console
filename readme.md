@@ -141,7 +141,7 @@ new SyslogServer()
 ## Пример проекта
 
 В папке **test** находится тестовый проект **debug-console.irpz**, который собирается при помощи grunt-скрипта [Irdiium Project Builder](https://github.com/bladerunner2020/iridium-project-builder).
-В папке [test/build]() находится
+В папке [test/build](https://github.com/bladerunner2020/debug-console/tree/master/test/build) находится
 уже собранный проект - скачивайте и смотрите, как все работает. :smile:
 
 ## Идеи для будущего развития
