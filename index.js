@@ -85,14 +85,9 @@ function DebugConsole(options) {
     this.messages = new RingBuffer((options && options.maxBufferSize) ? options.maxBufferSize : 1024);
     this.lastPage = null;
 
-    this.filterEvent = {};
-    this.filterSource = {};
-    this.showOptions = {
-        timestamp : true,
-        event : true,
-        source : true,
-        message  :true
-    };
+    this.eventFilter = {};
+    this.sourceFilter = {};
+    this.fieldFilter = {};
 
 
     var that = this;
@@ -102,75 +97,84 @@ function DebugConsole(options) {
             that.active = true;
             that.updateConsole();
 
-            var button = that.debugPage.GetItem('Pause');
-            if (button) {
-                button.Value = !that.active;
-            }
+            var page = that.debugPage;
+
+            initButtonValue(page, 'PlayPause', that.active);
+            initButtonValue(page, 'ShowDebug', !that.eventFilter.debug);
+            initButtonValue(page, 'ShowInfo', !that.eventFilter.info);
+            initButtonValue(page, 'ShowWarning', !that.eventFilter.warning);
+            initButtonValue(page, 'ShowError', !that.eventFilter.error);
+            initButtonValue(page, 'ShowTimestamp', !that.fieldFilter.timestamp);
+            initButtonValue(page, 'ShowEvent', !that.fieldFilter.event);
+            initButtonValue(page, 'ShowSource', !that.fieldFilter.source);
+            initButtonValue(page, 'ShowMessage', !that.fieldFilter.message);
         });
 
         IR.AddListener(IR.EVENT_ITEM_HIDE, this.debugPage, function() {
             that.active = false;
         });
 
-        IR.AddListener(IR.EVENT_ITEM_PRESS, this.debugPage.GetItem('Copy'), function(){
-
-        });
-
-        IR.AddListener(IR.EVENT_ITEM_PRESS, this.debugPage.GetItem('Pause'), function(){
-            that.active = !that.active;
-            
-            var button = that.debugPage.GetItem('Pause');
-            button.Value = !that.active;
-        });
-        
         IR.AddListener(IR.EVENT_ITEM_PRESS, this.debugPage.GetItem('Clear'), function(){
             that.clear();
             that.updateConsole();
         });
 
-        IR.AddListener(IR.EVENT_ITEM_PRESS, this.debugPage.GetItem('GoBack'), function(){
+        IR.AddListener(IR.EVENT_ITEM_RELEASE, this.debugPage.GetItem('GoBack'), function(){
             that.hideConsole();
         });
+        
+        var button = that.debugPage.GetItem('PlayPause');
+        IR.AddListener(IR.EVENT_ITEM_PRESS, button, function(){
+            that.active = this.Value;
+        }, button);
+        
+        button = this.debugPage.GetItem("ShowDebug");
+        IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
+            that.eventFilter.debug = !this.Value;
+            that.updateConsole();
+        }, button);
 
-        IR.AddListener(IR.EVENT_ITEM_RELEASE, this.debugPage.GetItem("ShowDebug"), function () {
-            debugConsole.setEventFilter('debug', !that.getSettingsValue('ShowDebug'));
-            debugConsole.updateConsole();
-        });
+        button = this.debugPage.GetItem("ShowInfo");
+        IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
+            that.eventFilter.info = !this.Value;
+            that.updateConsole();
+        }, button);
 
-        IR.AddListener(IR.EVENT_ITEM_RELEASE, this.debugPage.GetItem("ShowInfo"), function () {
-            debugConsole.setEventFilter('info', !that.getSettingsValue('ShowInfo'));
-            debugConsole.updateConsole();
-        });
+        button = this.debugPage.GetItem("ShowWarning");
+        IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
+            that.eventFilter.warning = !this.Value;
+            that.updateConsole();
+        }, button);
 
-        IR.AddListener(IR.EVENT_ITEM_RELEASE, this.debugPage.GetItem("ShowWarning"), function () {
-            debugConsole.setEventFilter('warning', !that.getSettingsValue('ShowWarning'));
-            debugConsole.updateConsole();
-        });
+        button = this.debugPage.GetItem("ShowError");
+        IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
+            that.eventFilter.error = !this.Value;
+            that.updateConsole();
+        }, button);
 
-        IR.AddListener(IR.EVENT_ITEM_RELEASE, this.debugPage.GetItem("ShowError"), function () {
-            debugConsole.setEventFilter('error', !that.getSettingsValue('ShowError'));
-            debugConsole.updateConsole();
-        });
+        button = this.debugPage.GetItem("ShowTimestamp");
+        IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
+            that.fieldFilter.timestamp = !this.Value;
+            that.updateConsole();
+        }, button);
+        
+        button = this.debugPage.GetItem("ShowEvent");
+        IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
+            that.fieldFilter.event = !this.Value;
+            that.updateConsole();
+        }, button);
 
-        IR.AddListener(IR.EVENT_ITEM_RELEASE, this.debugPage.GetItem("ShowTimestamp"), function () {
-            debugConsole.showField('timestamp', that.getSettingsValue('ShowTimestamp'));
-            debugConsole.updateConsole();
-        });
-
-        IR.AddListener(IR.EVENT_ITEM_RELEASE, this.debugPage.GetItem("ShowEvent"), function () {
-            debugConsole.showField('event', that.getSettingsValue('ShowEvent'));
-            debugConsole.updateConsole();
-        });
-
-        IR.AddListener(IR.EVENT_ITEM_RELEASE, this.debugPage.GetItem("ShowSource"), function () {
-            debugConsole.showField('source', that.getSettingsValue('ShowSource'));
-            debugConsole.updateConsole();
-        });
-
-        IR.AddListener(IR.EVENT_ITEM_RELEASE, this.debugPage.GetItem("ShowMessage"), function () {
-            debugConsole.showField('message', that.getSettingsValue('ShowMessage'));
-            debugConsole.updateConsole();
-        });
+        button = this.debugPage.GetItem("ShowSource");
+        IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
+            that.fieldFilter.source = !this.Value;
+            that.updateConsole();
+        }, button);
+        
+        button = this.debugPage.GetItem("ShowMessage");
+        IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
+            that.fieldFilter.message = !this.Value;
+            that.updateConsole();
+        }, button);
     }
     
     this.setLineCount = function (count) {
@@ -181,13 +185,23 @@ function DebugConsole(options) {
         if (typeof msg == 'string') {
             var msgObj = {};
             msgObj.message = msg;
-            msgObj.event = 'log';
-            msgObj.source = 'script';
+            msgObj.event = 'info';
+            msgObj.source = 'SCRIPT';
             msgObj.timestamp = new Date();
+
+            if (msgObj.message.indexOf('DEBUG: ') == 0) {
+                msgObj.event = 'debug';
+                msgObj.message = msgObj.message.substr(7);
+            } else if (msgObj.message.indexOf('ERROR: ') == 0) {
+                msgObj.event = 'error';
+                msgObj.message = msgObj.message.substr(7);
+            } else if (msgObj.message.indexOf('WARNING: ') == 0) {
+                msgObj.event = 'warning';
+                msgObj.message = msgObj.message.substr(9);
+            }
             
             msg = msgObj;
         }
-        
         
         this.messages.push(msg);
 
@@ -196,22 +210,27 @@ function DebugConsole(options) {
         }
 
         if (!this.noConsoleLog) {
-            IR.Log(this.msgToString(msg));
+            var event = '';
+            if (msg.event && msg.event != 'info') {
+                event = msg.event.toUpperCase() + ': ';
+            }
+
+            IR.Log(event + msg.message);
         }
     };
     
     this.showField = function (field, show) {
-        this.showOptions[field] = show;
+        this.fieldFilter[field] = !show;
         return this;
     };
     
     this.setEventFilter = function (event, hide) {
-        this.filterEvent[event] = hide;
+        this.eventFilter[event] = hide;
         return this;
     };
 
     this.setSourceFilter = function (source, hide) {
-        this.filterSource[source] = hide;
+        this.sourceFilter[source] = hide;
         return this;
     };
     
@@ -220,13 +239,10 @@ function DebugConsole(options) {
         return this;
     };
     
-    this.getSettingsValue = options ? options.getSettingsValue : function (tag) {
-        return IR.GetVariable('Global.' + tag);
-    };
 
     this.msgToString = function(msg) {
         var timestamp = '';
-        if (this.showOptions.timestamp) {
+        if (!this.fieldFilter.timestamp) {
             timestamp = msg.timestamp;
             if (timestamp) {
                 if (typeof timestamp != 'string') {
@@ -238,10 +254,10 @@ function DebugConsole(options) {
             timestamp = (timestamp + ' '.repeat(25)).slice(0, 25);
         }
 
-        var source = this.showOptions.source ? ((msg.source ? msg.source : '') + ' '.repeat(10)).slice(0, 10) : '';
-        var event = this.showOptions.event ? ((msg.event ? msg.event : '') + ' '.repeat(9)).slice(0, 9) : '';
+        var source = !this.fieldFilter.source ? ((msg.source ? msg.source : '') + ' '.repeat(10)).slice(0, 10) : '';
+        var event = !this.fieldFilter.event ? ((msg.event ? msg.event : '') + ' '.repeat(9)).slice(0, 9) : '';
 
-        var text = (msg.message && this.showOptions.message) ? msg.message : '';
+        var text = (msg.message && !this.fieldFilter.message) ? msg.message : '';
         text = timestamp + event + source + text;
 
         return text;
@@ -307,7 +323,7 @@ function DebugConsole(options) {
             var event = msg.event;
             var source = msg.source;
 
-            if (!(event && this.filterEvent[event]) && !(source && this.filterSource[source])) {
+            if (!(event && this.eventFilter[event]) && !(source && this.sourceFilter[source])) {
                 found++;
                 result.push(msg);
             }
@@ -330,5 +346,14 @@ function DebugConsole(options) {
     this.clear = function() {
         this.messages.clear();
     };
-}
 
+
+    function initButtonValue(page, name, value, defValue) {
+        if (page) {
+            var button = page.GetItem(name);
+            if (button) {
+                button.Value = (value != undefined) ? value : defValue;
+            }
+        }
+    }
+}
