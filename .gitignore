@@ -65,10 +65,6 @@ test/temp/
 .idea/**/dbnavigator.xml
 
 # Sensitive or high-churn files:
-.idea/debug-console.iml
-.idea/encodings.xml
-.idea/modules.xml
-.idea/workspace.xml
 .idea/dataSources.ids
 .idea/dataSources.xml
 .idea/dataSources.local.xml
