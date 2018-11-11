@@ -259,7 +259,7 @@ function DebugConsole(options) {
     };
     
 
-    this.msgToString = function(msg) {
+    this.msgToString = function(msg, ignoreFilter) {
         var timestamp = '';
         if (!this.fieldFilter.timestamp) {
             timestamp = msg.timestamp;
@@ -273,12 +273,12 @@ function DebugConsole(options) {
             timestamp = (timestamp + ' '.repeat(this.fieldSizes.timestamp)).slice(0, this.fieldSizes.timestamp);
         }
 
-        var source = !this.fieldFilter.source ? ((msg.source ? msg.source : '') + 
+        var source = (ignoreFilter || !this.fieldFilter.source) ? ((msg.source ? msg.source : '') + 
                 ' '.repeat(this.fieldSizes.source)).slice(0, this.fieldSizes.source) : '';
-        var event = !this.fieldFilter.event ? ((msg.event ? msg.event : '') + 
+        var event = (ignoreFilter || !this.fieldFilter.event) ? ((msg.event ? msg.event : '') + 
                 ' '.repeat(this.fieldSizes.event)).slice(0, this.fieldSizes.event) : '';
 
-        var text = (msg.message && !this.fieldFilter.message) ? msg.message : '';
+        var text = (msg.message && ((ignoreFilter || !this.fieldFilter.message))) ? msg.message : '';
         text = timestamp + event + source + text;
 
         return text;
@@ -358,7 +358,7 @@ function DebugConsole(options) {
 
         var text = "";
         for (var i = messages.length - 1; i >= 0; i--) {
-            text = text + this.msgToString(messages[i]) + "\n";
+            text = text + this.msgToString(messages[i], ignoreFilter) + "\n";
         }
 
         return text;
