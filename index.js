@@ -80,6 +80,12 @@ function DebugConsole(options) {
         this.debugPage = IR.GetPage(this.debugPageName);
     }
     
+    this.fieldSizes = {
+        timestamp : 25,
+        event : 9,
+        source : 10
+    };
+    
     this.active = false;
 
     this.messages = new RingBuffer((options && options.maxBufferSize) ? options.maxBufferSize : 1024);
@@ -179,6 +185,19 @@ function DebugConsole(options) {
     
     this.setLineCount = function (count) {
         this.lineCount = count;
+
+        return this;
+    };
+    
+    
+    this.setFieldSizes = function (fieldSizes) {
+        for (var key in fieldSizes) {
+            if (fieldSizes.hasOwnProperty(key)) {
+                this.fieldSizes[key] = fieldSizes[key];
+            }
+        }
+        
+        return this;
     };
     
     this.log = function(msg) {
@@ -251,11 +270,13 @@ function DebugConsole(options) {
             } else {
                 timestamp = '';
             }
-            timestamp = (timestamp + ' '.repeat(25)).slice(0, 25);
+            timestamp = (timestamp + ' '.repeat(this.fieldSizes.timestamp)).slice(0, this.fieldSizes.timestamp);
         }
 
-        var source = !this.fieldFilter.source ? ((msg.source ? msg.source : '') + ' '.repeat(10)).slice(0, 10) : '';
-        var event = !this.fieldFilter.event ? ((msg.event ? msg.event : '') + ' '.repeat(9)).slice(0, 9) : '';
+        var source = !this.fieldFilter.source ? ((msg.source ? msg.source : '') + 
+                ' '.repeat(this.fieldSizes.source)).slice(0, this.fieldSizes.source) : '';
+        var event = !this.fieldFilter.event ? ((msg.event ? msg.event : '') + 
+                ' '.repeat(this.fieldSizes.event)).slice(0, this.fieldSizes.event) : '';
 
         var text = (msg.message && !this.fieldFilter.message) ? msg.message : '';
         text = timestamp + event + source + text;
@@ -308,7 +329,7 @@ function DebugConsole(options) {
         return that.messages.get(index);
     };
 
-    this.getLastMessages = function(count) {
+    this.getLastMessages = function(count, ignoreFilter) {
         if (count == undefined || count > that.messages.length) {
             count = this.messages.length;
         }
@@ -323,7 +344,7 @@ function DebugConsole(options) {
             var event = msg.event;
             var source = msg.source;
 
-            if (!(event && this.eventFilter[event]) && !(source && this.sourceFilter[source])) {
+            if (ignoreFilter || (!(event && this.eventFilter[event]) && !(source && this.sourceFilter[source]))) {
                 found++;
                 result.push(msg);
             }
@@ -332,8 +353,8 @@ function DebugConsole(options) {
         return result;
     };
     
-    this.getLastMessagesText = function(count) {
-        var messages = this.getLastMessages(count);
+    this.getLastMessagesText = function(count, ignoreFilter) {
+        var messages = this.getLastMessages(count, ignoreFilter);
 
         var text = "";
         for (var i = messages.length - 1; i >= 0; i--) {

@@ -9,7 +9,8 @@ var debugConsole = new DebugConsole({
 // Устанавливаем начальные настройки отладочной консоли
 debugConsole
     .setEventFilter('debug', true)  // Не показывать события debug
-    .showField('source', false);    // Не показывать поле source
+    .showField('source', false)     // Не показывать поле source
+    .setFieldSizes({source : 15});
 
 
 // Функции для вывода отладочной информации вместо IR.Log
@@ -42,9 +43,12 @@ IR.SetInterval(1000, function () {
     var index = Math.floor(((Math.random() * 10))/10*4) + 1;
     count++;
 
+    var count2 = debugConsole.getMessageCount(0, true);
+
+
     switch (index) {
         case 1:
-            _Debug('count = ' + count);
+            _Debug('count = ' + count2);
             break;
         case 2:
             _Log('count = ' + count);
