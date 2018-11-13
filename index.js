@@ -236,7 +236,16 @@ function DebugConsole(options) {
             msgObj.message = msg;
             msgObj.event = 'info';
             msgObj.source = 'SCRIPT';
-            msgObj.timestamp = new Date();
+
+            var d = new Date();
+            msgObj.timestamp = 
+                ('00' + d.getDate()).slice(-2) + '-' +
+                ('00' + (d.getMonth() + 1)).slice(-2) + '-' +
+                d.getFullYear() + ' ' +
+                ('00' + d.getHours()).slice(-2) + ':' +
+                ('00' + d.getMinutes()).slice(-2) + ':' +
+                ('00' + d.getSeconds()).slice(-2) + '.' +
+                ('000' + d.getMilliseconds()).slice(-3);
 
             if (msgObj.message.indexOf('DEBUG: ') == 0) {
                 msgObj.event = 'debug';
