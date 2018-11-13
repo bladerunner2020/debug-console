@@ -115,72 +115,96 @@ function DebugConsole(options) {
             initButtonValue(page, 'ShowSource', !that.fieldFilter.source);
             initButtonValue(page, 'ShowMessage', !that.fieldFilter.message);
         });
-
+        
         IR.AddListener(IR.EVENT_ITEM_HIDE, this.debugPage, function() {
             that.active = false;
         });
 
-        IR.AddListener(IR.EVENT_ITEM_PRESS, this.debugPage.GetItem('Clear'), function(){
-            that.clear();
-            that.updateConsole();
-        });
+        var button = that.debugPage.GetItem('Clear');
+        if (button) {
+            IR.AddListener(IR.EVENT_ITEM_PRESS, button, function () {
+                that.clear();
+                that.updateConsole();
+            });
+        }
 
-        IR.AddListener(IR.EVENT_ITEM_RELEASE, this.debugPage.GetItem('GoBack'), function(){
-            that.hideConsole();
-        });
+        button = that.debugPage.GetItem('GoBack');
+        if (button) {
+            IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
+                that.hideConsole();
+            });
+        }
         
-        var button = that.debugPage.GetItem('PlayPause');
-        IR.AddListener(IR.EVENT_ITEM_PRESS, button, function(){
-            that.active = this.Value;
-        }, button);
+        button = that.debugPage.GetItem('PlayPause');
+        if (button) {
+            IR.AddListener(IR.EVENT_ITEM_PRESS, button, function () {
+                that.active = this.Value;
+            }, button);
+        }
         
         button = this.debugPage.GetItem("ShowDebug");
-        IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
-            that.eventFilter.debug = !this.Value;
-            that.updateConsole();
-        }, button);
+        if (button) {
+            IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
+                that.eventFilter.debug = !this.Value;
+                that.updateConsole();
+            }, button);
+        }
 
         button = this.debugPage.GetItem("ShowInfo");
-        IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
-            that.eventFilter.info = !this.Value;
-            that.updateConsole();
-        }, button);
+        if (button) {
+            IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
+                that.eventFilter.info = !this.Value;
+                that.updateConsole();
+            }, button);
+        }
 
         button = this.debugPage.GetItem("ShowWarning");
-        IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
-            that.eventFilter.warning = !this.Value;
-            that.updateConsole();
-        }, button);
+        if (button) {
+            IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
+                that.eventFilter.warning = !this.Value;
+                that.updateConsole();
+            }, button);
+        }
 
         button = this.debugPage.GetItem("ShowError");
-        IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
-            that.eventFilter.error = !this.Value;
-            that.updateConsole();
-        }, button);
+        if (button) {
+            IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
+                that.eventFilter.error = !this.Value;
+                that.updateConsole();
+            }, button);
+        }
 
         button = this.debugPage.GetItem("ShowTimestamp");
-        IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
-            that.fieldFilter.timestamp = !this.Value;
-            that.updateConsole();
-        }, button);
+        if (button) {
+            IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
+                that.fieldFilter.timestamp = !this.Value;
+                that.updateConsole();
+            }, button);
+        }
         
         button = this.debugPage.GetItem("ShowEvent");
-        IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
-            that.fieldFilter.event = !this.Value;
-            that.updateConsole();
-        }, button);
+        if (button) {
+            IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
+                that.fieldFilter.event = !this.Value;
+                that.updateConsole();
+            }, button);
+        }
 
         button = this.debugPage.GetItem("ShowSource");
-        IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
-            that.fieldFilter.source = !this.Value;
-            that.updateConsole();
-        }, button);
+        if (button) {
+            IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
+                that.fieldFilter.source = !this.Value;
+                that.updateConsole();
+            }, button);
+        }
         
         button = this.debugPage.GetItem("ShowMessage");
-        IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
-            that.fieldFilter.message = !this.Value;
-            that.updateConsole();
-        }, button);
+        if (button) {
+            IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
+                that.fieldFilter.message = !this.Value;
+                that.updateConsole();
+            }, button);
+        }
     }
     
     this.setLineCount = function (count) {
