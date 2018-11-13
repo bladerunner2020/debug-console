@@ -85,6 +85,8 @@ function DebugConsole(options) {
         event : 9,
         source : 10
     };
+
+    this.consoleDisabled = false;
     
     this.active = false;
 
@@ -225,6 +227,10 @@ function DebugConsole(options) {
     };
     
     this.log = function(msg) {
+        if (this.consoleDisabled) {
+            return;
+        }
+        
         if (typeof msg == 'string') {
             var msgObj = {};
             msgObj.message = msg;
@@ -281,7 +287,17 @@ function DebugConsole(options) {
         this[functionName] = newFunction;
         return this;
     };
-    
+
+    this.disableConsole = function () {
+        this.consoleDisabled = true;
+        return this;
+    };
+
+    this.enableConsole = function () {
+        this.consoleDisabled = false;
+        return this;
+    };
+
 
     this.msgToString = function(msg, ignoreFilter) {
         var timestamp = '';
