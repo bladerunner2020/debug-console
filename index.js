@@ -99,115 +99,117 @@ function DebugConsole(options) {
 
 
     var that = this;
+
+    this.registerListener = function (cb, data) {
+        var button = this.debugPage.GetItem(data.itemName);
+        if (button) {
+            IR.AddListener(IR.EVENT_ITEM_RELEASE, button, cb, data);
+        }
+    };
+
+    this.unregisterListener = function (cb, data) {
+        var button = this.debugPage.GetItem(data.itemName);
+        if (button) {
+            IR.RemoveListener(IR.EVENT_ITEM_RELEASE, button, cb);
+        }
+    };
+
     
     if (this.debugPage) {
-        IR.AddListener(IR.EVENT_ITEM_SHOW, this.debugPage, function() {
-            that.active = true;
-            that.updateConsole();
+        IR.AddListener(IR.EVENT_ITEM_SHOW, this.debugPage, onConsoleShow);
+        IR.AddListener(IR.EVENT_ITEM_HIDE, this.debugPage, onConsoleHide);
 
-            var page = that.debugPage;
+        this.registerListener(onClearItemPressed, {itemName: "Clear"});
+        this.registerListener(onGoBackItemPressed, {itemName: "GoBack"});
 
-            initButtonValue(page, 'PlayPause', that.active);
-            initButtonValue(page, 'ShowDebug', !that.eventFilter.debug);
-            initButtonValue(page, 'ShowInfo', !that.eventFilter.info);
-            initButtonValue(page, 'ShowWarning', !that.eventFilter.warning);
-            initButtonValue(page, 'ShowError', !that.eventFilter.error);
-            initButtonValue(page, 'ShowTimestamp', !that.fieldFilter.timestamp);
-            initButtonValue(page, 'ShowEvent', !that.fieldFilter.event);
-            initButtonValue(page, 'ShowSource', !that.fieldFilter.source);
-            initButtonValue(page, 'ShowMessage', !that.fieldFilter.message);
-        });
-        
-        IR.AddListener(IR.EVENT_ITEM_HIDE, this.debugPage, function() {
-            that.active = false;
-        });
+        this.registerListener(onPlayItemPressed, {itemName: "PlayPause"});
 
-        var button = that.debugPage.GetItem('Clear');
-        if (button) {
-            IR.AddListener(IR.EVENT_ITEM_PRESS, button, function () {
-                that.clear();
-                that.updateConsole();
-            });
-        }
+        this.registerListener(onItemPressed, {itemName: "ShowDebug", path: ["eventFilter", "debug"]});
+        this.registerListener(onItemPressed, {itemName: "ShowInfo", path: ["eventFilter", "info"]});
+        this.registerListener(onItemPressed, {itemName: "ShowWarning", path: ["eventFilter", "warning"]});
+        this.registerListener(onItemPressed, {itemName: "ShowError", path: ["eventFilter", "error"]});        
 
-        button = that.debugPage.GetItem('GoBack');
-        if (button) {
-            IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
-                that.hideConsole();
-            });
-        }
-        
-        button = that.debugPage.GetItem('PlayPause');
-        if (button) {
-            IR.AddListener(IR.EVENT_ITEM_PRESS, button, function () {
-                that.active = this.Value;
-            }, button);
-        }
-        
-        button = this.debugPage.GetItem("ShowDebug");
-        if (button) {
-            IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
-                that.eventFilter.debug = !this.Value;
-                that.updateConsole();
-            }, button);
-        }
-
-        button = this.debugPage.GetItem("ShowInfo");
-        if (button) {
-            IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
-                that.eventFilter.info = !this.Value;
-                that.updateConsole();
-            }, button);
-        }
-
-        button = this.debugPage.GetItem("ShowWarning");
-        if (button) {
-            IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
-                that.eventFilter.warning = !this.Value;
-                that.updateConsole();
-            }, button);
-        }
-
-        button = this.debugPage.GetItem("ShowError");
-        if (button) {
-            IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
-                that.eventFilter.error = !this.Value;
-                that.updateConsole();
-            }, button);
-        }
-
-        button = this.debugPage.GetItem("ShowTimestamp");
-        if (button) {
-            IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
-                that.fieldFilter.timestamp = !this.Value;
-                that.updateConsole();
-            }, button);
-        }
-        
-        button = this.debugPage.GetItem("ShowEvent");
-        if (button) {
-            IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
-                that.fieldFilter.event = !this.Value;
-                that.updateConsole();
-            }, button);
-        }
-
-        button = this.debugPage.GetItem("ShowSource");
-        if (button) {
-            IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
-                that.fieldFilter.source = !this.Value;
-                that.updateConsole();
-            }, button);
-        }
-        
-        button = this.debugPage.GetItem("ShowMessage");
-        if (button) {
-            IR.AddListener(IR.EVENT_ITEM_RELEASE, button, function () {
-                that.fieldFilter.message = !this.Value;
-                that.updateConsole();
-            }, button);
-        }
+        this.registerListener(onItemPressed, {itemName: "ShowTimestamp", path: ["fieldFilter", "timestamp"]});
+        this.registerListener(onItemPressed, {itemName: "ShowEvent", path: ["fieldFilter", "event"]});
+        this.registerListener(onItemPressed, {itemName: "ShowSource", path: ["fieldFilter", "source"]});
+        this.registerListener(onItemPressed, {itemName: "ShowMessage", path: ["fieldFilter", "message"]});
     }
+    
+    function onConsoleShow() {
+        that.active = true;
+        that.updateConsole();
+
+        var page = that.debugPage;
+
+        initButtonValue(page, 'PlayPause', that.active);
+        initButtonValue(page, 'ShowDebug', !that.eventFilter.debug);
+        initButtonValue(page, 'ShowInfo', !that.eventFilter.info);
+        initButtonValue(page, 'ShowWarning', !that.eventFilter.warning);
+        initButtonValue(page, 'ShowError', !that.eventFilter.error);
+        initButtonValue(page, 'ShowTimestamp', !that.fieldFilter.timestamp);
+        initButtonValue(page, 'ShowEvent', !that.fieldFilter.event);
+        initButtonValue(page, 'ShowSource', !that.fieldFilter.source);
+        initButtonValue(page, 'ShowMessage', !that.fieldFilter.message);     
+    }
+
+    function onConsoleHide() {
+        that.active = false;
+    }
+
+    function onGoBackItemPressed() {
+        that.hideConsole();
+    }
+
+    function onClearItemPressed() {
+        that.clear();
+        that.updateConsole();
+    }
+
+    function onPlayItemPressed() {
+        var button = that.debugPage.GetItem(this.itemName);
+        that.active = button.Value;
+
+    }
+
+    function onItemPressed() {
+        // К this привязана структура {item : button, obj : objName, prop: propName}
+
+        var button = that.debugPage.GetItem(this.itemName);
+        if (button) {
+            var object = that;
+            for (var i = 0; i < this.path.length - 1; i++) {
+                object = object[this.path[i]];
+            }
+            object[this.path[this.path.length - 1]] = !button.Value;
+
+        }
+
+        that.updateConsole();
+    }
+
+    this.kill = function () {
+        this.clear();
+        
+        if (this.debugPage) {
+            IR.RemoveListener(IR.EVENT_ITEM_SHOW, this.debugPage, onConsoleShow);
+            IR.RemoveListener(IR.EVENT_ITEM_HIDE, this.debugPage, onConsoleHide);
+
+            this.unregisterListener(onGoBackItemPressed, {itemName: "Clear"});
+            this.unregisterListener(onGoBackItemPressed, {itemName: "GoBack"});
+
+            this.unregisterListener(onItemPressed, {itemName: "PlayPause"});
+
+            this.unregisterListener(onItemPressed, {itemName: "ShowDebug"});
+            this.unregisterListener(onItemPressed, {itemName: "ShowInfo"});
+            this.unregisterListener(onItemPressed, {itemName: "ShowWarning"});
+            this.unregisterListener(onItemPressed, {itemName: "ShowError"});
+
+            this.unregisterListener(onItemPressed, {itemName: "ShowTimestamp"});
+            this.unregisterListener(onItemPressed, {itemName: "ShowEvent"});
+            this.unregisterListener(onItemPressed, {itemName: "ShowSource"});
+            this.unregisterListener(onItemPressed, {itemName: "ShowMessage"});
+        }
+    };
     
     this.setLineCount = function (count) {
         this.lineCount = count;
