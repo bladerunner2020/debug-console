@@ -198,12 +198,17 @@ function DebugConsole(options) {
         // К this привязана структура {item : button, obj : objName, prop: propName}
 
         var button = that.debugPage.GetItem(this.itemName);
+        var len = this.path.length;
         if (button) {
             var object = that;
-            for (var i = 0; i < this.path.length - 1; i++) {
+            for (var i = 0; i < len - 1; i++) {
                 object = object[this.path[i]];
             }
-            object[this.path[this.path.length - 1]] = !button.Value;
+            object[this.path[len - 1]] = !button.Value;
+
+            if (len > 1) {     // Это означает, что нажата кнопка фильтров
+                that.callEvent('settings', this.path[len - 2], this.path[len - 1], !button.Value);
+            }
 
         }
 
