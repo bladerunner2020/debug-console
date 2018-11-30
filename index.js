@@ -1,5 +1,8 @@
 // DebugConsole - outputs debug messages to special page debug console
 
+/* e slint no-unused-vars: */
+/*global IR*/
+
 function RingBuffer(length) {
     this.buffer = [];
     this.length = 0;
@@ -64,7 +67,7 @@ if (!String.prototype.repeat) {
         }
         str += str.substring(0, maxCount - str.length);
         return str;
-    }
+    };
 }
 
 function DebugConsole(options) {
@@ -75,6 +78,8 @@ function DebugConsole(options) {
 
     this.debugPage = IR.GetPopup(this.debugPageName);
     this.isPopup = !!this.debugPage;
+
+    this._eventCallbacks = {};
     
     if (!this.isPopup) {
         this.debugPage = IR.GetPage(this.debugPageName);
@@ -114,25 +119,41 @@ function DebugConsole(options) {
         }
     };
 
+    this.on = function(event, callback) {
+        if (this._eventCallbacks[event]) {
+            throw new Error('Callback for this event is already set: ' + event);
+        }
+    
+        this._eventCallbacks[event] = callback;
+        return this;
+    };
+
+    this.callEvent = function(/* event, arg1, arg2 ...*/) {
+        var args = Array.prototype.slice.call(arguments, 0);
+        var event = args.shift();
+        if (this._eventCallbacks[event]) {
+            this._eventCallbacks[event].apply(this, args);
+        }
+    };
     
     if (this.debugPage) {
         IR.AddListener(IR.EVENT_ITEM_SHOW, this.debugPage, onConsoleShow);
         IR.AddListener(IR.EVENT_ITEM_HIDE, this.debugPage, onConsoleHide);
 
-        this.registerListener(onClearItemPressed, {itemName: "Clear"});
-        this.registerListener(onGoBackItemPressed, {itemName: "GoBack"});
+        this.registerListener(onClearItemPressed, {itemName: 'Clear'});
+        this.registerListener(onGoBackItemPressed, {itemName: 'GoBack'});
 
-        this.registerListener(onPlayItemPressed, {itemName: "PlayPause"});
+        this.registerListener(onPlayItemPressed, {itemName: 'PlayPause'});
 
-        this.registerListener(onItemPressed, {itemName: "ShowDebug", path: ["eventFilter", "debug"]});
-        this.registerListener(onItemPressed, {itemName: "ShowInfo", path: ["eventFilter", "info"]});
-        this.registerListener(onItemPressed, {itemName: "ShowWarning", path: ["eventFilter", "warning"]});
-        this.registerListener(onItemPressed, {itemName: "ShowError", path: ["eventFilter", "error"]});        
+        this.registerListener(onItemPressed, {itemName: 'ShowDebug', path: ['eventFilter', 'debug']});
+        this.registerListener(onItemPressed, {itemName: 'ShowInfo', path: ['eventFilter', 'info']});
+        this.registerListener(onItemPressed, {itemName: 'ShowWarning', path: ['eventFilter', 'warning']});
+        this.registerListener(onItemPressed, {itemName: 'ShowError', path: ['eventFilter', 'error']});        
 
-        this.registerListener(onItemPressed, {itemName: "ShowTimestamp", path: ["fieldFilter", "timestamp"]});
-        this.registerListener(onItemPressed, {itemName: "ShowEvent", path: ["fieldFilter", "event"]});
-        this.registerListener(onItemPressed, {itemName: "ShowSource", path: ["fieldFilter", "source"]});
-        this.registerListener(onItemPressed, {itemName: "ShowMessage", path: ["fieldFilter", "message"]});
+        this.registerListener(onItemPressed, {itemName: 'ShowTimestamp', path: ['fieldFilter', 'timestamp']});
+        this.registerListener(onItemPressed, {itemName: 'ShowEvent', path: ['fieldFilter', 'event']});
+        this.registerListener(onItemPressed, {itemName: 'ShowSource', path: ['fieldFilter', 'source']});
+        this.registerListener(onItemPressed, {itemName: 'ShowMessage', path: ['fieldFilter', 'message']});
     }
     
     function onConsoleShow() {
@@ -165,12 +186,14 @@ function DebugConsole(options) {
         that.updateConsole();
     }
 
+    /** @this onPlayItemPressed */
     function onPlayItemPressed() {
         var button = that.debugPage.GetItem(this.itemName);
         that.active = button.Value;
 
     }
 
+    /** @this onItemPressed */
     function onItemPressed() {
         // К this привязана структура {item : button, obj : objName, prop: propName}
 
@@ -194,20 +217,20 @@ function DebugConsole(options) {
             IR.RemoveListener(IR.EVENT_ITEM_SHOW, this.debugPage, onConsoleShow);
             IR.RemoveListener(IR.EVENT_ITEM_HIDE, this.debugPage, onConsoleHide);
 
-            this.unregisterListener(onGoBackItemPressed, {itemName: "Clear"});
-            this.unregisterListener(onGoBackItemPressed, {itemName: "GoBack"});
+            this.unregisterListener(onGoBackItemPressed, {itemName: 'Clear'});
+            this.unregisterListener(onGoBackItemPressed, {itemName: 'GoBack'});
 
-            this.unregisterListener(onItemPressed, {itemName: "PlayPause"});
+            this.unregisterListener(onItemPressed, {itemName: 'PlayPause'});
 
-            this.unregisterListener(onItemPressed, {itemName: "ShowDebug"});
-            this.unregisterListener(onItemPressed, {itemName: "ShowInfo"});
-            this.unregisterListener(onItemPressed, {itemName: "ShowWarning"});
-            this.unregisterListener(onItemPressed, {itemName: "ShowError"});
+            this.unregisterListener(onItemPressed, {itemName: 'ShowDebug'});
+            this.unregisterListener(onItemPressed, {itemName: 'ShowInfo'});
+            this.unregisterListener(onItemPressed, {itemName: 'ShowWarning'});
+            this.unregisterListener(onItemPressed, {itemName: 'ShowError'});
 
-            this.unregisterListener(onItemPressed, {itemName: "ShowTimestamp"});
-            this.unregisterListener(onItemPressed, {itemName: "ShowEvent"});
-            this.unregisterListener(onItemPressed, {itemName: "ShowSource"});
-            this.unregisterListener(onItemPressed, {itemName: "ShowMessage"});
+            this.unregisterListener(onItemPressed, {itemName: 'ShowTimestamp'});
+            this.unregisterListener(onItemPressed, {itemName: 'ShowEvent'});
+            this.unregisterListener(onItemPressed, {itemName: 'ShowSource'});
+            this.unregisterListener(onItemPressed, {itemName: 'ShowMessage'});
         }
     };
     
@@ -280,17 +303,29 @@ function DebugConsole(options) {
     };
     
     this.showField = function (field, show) {
-        this.fieldFilter[field] = !show;
+
+        if (this.fieldFilter[field] != !show) {
+            this.fieldFilter[field] = !show;
+            this.callEvent('settings', 'showField', field, show);
+        }
         return this;
     };
     
     this.setEventFilter = function (event, hide) {
-        this.eventFilter[event] = hide;
+        if (this.eventFilter[event] != hide) {
+            this.fieldFilter[event] = hide;
+            this.callEvent('settings', 'eventFilter', event, hide);
+        }
+
         return this;
     };
 
     this.setSourceFilter = function (source, hide) {
-        this.sourceFilter[source] = hide;
+        if (this.sourceFilter[source] != hide) {
+            this.sourceFilter[source] = hide;
+            this.callEvent('settings', 'sourceFilter', source, hide);
+        }
+
         return this;
     };
     
@@ -361,10 +396,13 @@ function DebugConsole(options) {
         }
     };
 
+    // eslint-disable-next-line no-unused-vars
     this.updateConsole = function(msg) {
-        if (!that.debugPage) return;
+        if (!that.debugPage) {
+            return;
+        }
 
-        var console = that.debugPage.GetItem("Log");
+        var console = that.debugPage.GetItem('Log');
         if (!console) {
             return;
         }
@@ -407,9 +445,9 @@ function DebugConsole(options) {
     this.getLastMessagesText = function(count, ignoreFilter) {
         var messages = this.getLastMessages(count, ignoreFilter);
 
-        var text = "";
+        var text = '';
         for (var i = messages.length - 1; i >= 0; i--) {
-            text = text + this.msgToString(messages[i], ignoreFilter) + "\n";
+            text = text + this.msgToString(messages[i], ignoreFilter) + '\n';
         }
 
         return text;
@@ -429,3 +467,16 @@ function DebugConsole(options) {
         }
     }
 }
+
+// Necessary to use in IridiumMobile
+if (typeof IR === 'object') {
+    var exports = {};
+}
+
+exports.DebugConsole = DebugConsole;
+
+// Necessary to use in IridiumMobile
+if ((typeof IR === 'object') && (typeof module === 'object')) {
+    module['debug-console'] = exports;
+    exports = undefined;
+} 
