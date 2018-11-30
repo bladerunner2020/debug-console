@@ -318,7 +318,7 @@ function DebugConsole(options) {
     
     this.setEventFilter = function (event, hide) {
         if (this.eventFilter[event] != hide) {
-            this.fieldFilter[event] = hide;
+            this.eventFilter[event] = hide;
             this.callEvent('settings', 'eventFilter', event, hide);
         }
 
