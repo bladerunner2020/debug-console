@@ -112,6 +112,8 @@ function DebugConsole(options) {
         if (button) {
             IR.AddListener(IR.EVENT_ITEM_RELEASE, button, cb, data);
         }
+
+        return this;
     };
 
     this.unregisterListener = function (cb, data) {
@@ -119,6 +121,8 @@ function DebugConsole(options) {
         if (button) {
             IR.RemoveListener(IR.EVENT_ITEM_RELEASE, button, cb);
         }
+
+        return this;
     };
 
     this.on = function(event, callback) {
@@ -257,6 +261,8 @@ function DebugConsole(options) {
 
     this.setColumnsCount = function(count) {
         this.columnsCount = count;
+
+        return this;
     };
     
     this.log = function(msg) {
