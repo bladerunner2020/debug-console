@@ -102,6 +102,8 @@ function DebugConsole(options) {
     this.sourceFilter = {};
     this.fieldFilter = {};
 
+    this.columnsCount = undefined;
+
 
     var that = this;
 
@@ -190,7 +192,6 @@ function DebugConsole(options) {
     function onPlayItemPressed() {
         var button = that.debugPage.GetItem(this.itemName);
         that.active = button.Value;
-
     }
 
     /** @this onItemPressed */
@@ -209,7 +210,6 @@ function DebugConsole(options) {
             if (len > 1) {     // Это означает, что нажата кнопка фильтров
                 that.callEvent('settings', this.path[len - 2], this.path[len - 1], !button.Value);
             }
-
         }
 
         that.updateConsole();
@@ -245,7 +245,6 @@ function DebugConsole(options) {
         return this;
     };
     
-    
     this.setFieldSizes = function (fieldSizes) {
         for (var key in fieldSizes) {
             if (fieldSizes.hasOwnProperty(key)) {
@@ -254,6 +253,10 @@ function DebugConsole(options) {
         }
         
         return this;
+    };
+
+    this.setColumnsCount = function(count) {
+        this.columnsCount = count;
     };
     
     this.log = function(msg) {
@@ -412,7 +415,31 @@ function DebugConsole(options) {
             return;
         }
 
-        console.Text =  this.getLastMessagesText(this.lineCount);
+        var count = this.getMessageCount();
+        var lineCount = 0;
+        var index = 0;
+        var text = '';
+
+
+        while ((lineCount < this.lineCount) && (index < count)) {
+            var msgText = this.msgToString(this.getMessage(count - index - 1));
+            index++;
+            if (this.columnsCount) {
+                var re = new RegExp('(.{1,' + this.columnsCount + '})', 'g');
+                var textArr = msgText ? msgText.match(re) : [];
+                for (var i = textArr.length-1; i >=0 ; i--) {
+                    text = textArr[i] + '\n' + text;
+                    lineCount++;
+                }
+            } else {
+                text = msgText + '\n' + text;
+                lineCount++;
+            }
+        }
+
+        console.Text = text;
+
+        // console.Text =  this.getLastMessagesText(this.lineCount);
     };
 
     this.getMessageCount = function() {
