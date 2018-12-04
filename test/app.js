@@ -23,7 +23,7 @@ function initConsole() {
     
     _Log('===== THIS IS FIRST MESSAGE =====');
 
-    debugConsole.setColumnsCount(100);
+    debugConsole.setColumnsCount(98);
 
     debugConsole.on('settings', function(arg1, arg2, arg3) {
         _Log('Settings are changed. ' + arg1 + ': ' + arg2 + ' = ' + arg3);
