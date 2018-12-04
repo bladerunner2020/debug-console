@@ -21,6 +21,10 @@ function initConsole() {
         // defaultPage: 'Main',
         debugPage: 'DebugPopup'});
     
+    _Log('===== THIS IS FIRST MESSAGE =====');
+
+    debugConsole.setColumnsCount(100);
+
     debugConsole.on('settings', function(arg1, arg2, arg3) {
         _Log('Settings are changed. ' + arg1 + ': ' + arg2 + ' = ' + arg3);
     });
@@ -81,23 +85,24 @@ initConsole();
 // Генерируем тестовый контент для вывода 
 var count = 0;
 IR.SetInterval(1000, function () {
-    var index = Math.floor(((Math.random() * 10))/10*4) + 1;
+    var index = Math.floor(((Math.random() * 10))/10*5) + 1;
     count++;
-
-    var count2 = debugConsole ? debugConsole.getMessageCount(0, true) : count;
 
     switch (index) {
     case 1:
-        _Debug('count = ' + count2);
+        _Debug('This is debug message ' + count);
         break;
     case 2:
-        _Log('count = ' + count);
+        _Log('Informational message = ' + count);
         break;
     case 3:
-        _Error('count = ' + count);
+        _Error('Error. Shit happens. Oohps. Count = ' + count);
         break;
     case 4:
-        _Warning('count = ' + count);
+        _Warning('Just warning. ' + count);
+        break;
+    case 5:
+        _Debug('Very long debug message. Long long very long. It is required to test multiline debug messages. few line messages...');
     }
 });
 
