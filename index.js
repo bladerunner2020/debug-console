@@ -444,7 +444,8 @@ function DebugConsole(options) {
             } else {
                 if (!(m.event && this.eventFilter[m.event]) && !(m.source && this.sourceFilter[m.source])) {
                     text = msgText + '\n' + text;
-                    lineCount++;                }
+                    lineCount++; 
+                }
             }
         }
 
