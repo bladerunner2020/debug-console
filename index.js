@@ -428,18 +428,23 @@ function DebugConsole(options) {
 
 
         while ((lineCount < this.lineCount) && (index < count)) {
-            var msgText = this.msgToString(this.getMessage(count - index - 1));
+            var m = this.getMessage(count - index - 1);
+            var msgText = this.msgToString(m);
             index++;
             if (this.columnsCount) {
                 var re = new RegExp('(.{1,' + this.columnsCount + '})', 'g');
                 var textArr = msgText ? msgText.match(re) : [];
                 for (var i = textArr.length-1; i >=0 ; i--) {
-                    text = textArr[i] + '\n' + text;
-                    lineCount++;
+
+                    if (!(m.event && this.eventFilter[m.event]) && !(m.source && this.sourceFilter[m.source])) {
+                        text = textArr[i] + '\n' + text;
+                        lineCount++;
+                    }
                 }
             } else {
-                text = msgText + '\n' + text;
-                lineCount++;
+                if (!(m.event && this.eventFilter[m.event]) && !(m.source && this.sourceFilter[m.source])) {
+                    text = msgText + '\n' + text;
+                    lineCount++;                }
             }
         }
 
