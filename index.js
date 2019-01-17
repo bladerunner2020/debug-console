@@ -1,6 +1,6 @@
 // DebugConsole - outputs debug messages to special page debug console
 
-/* e slint no-unused-vars: */
+/* eslint no-unused-vars: */
 /*global IR*/
 
 function RingBuffer(length) {
@@ -321,6 +321,7 @@ function DebugConsole(options) {
         if (this.fieldFilter[field] != !show) {
             this.fieldFilter[field] = !show;
             this.callEvent('settings', 'showField', field, show);
+            onConsoleShow(); // update console
         }
         return this;
     };
@@ -329,6 +330,7 @@ function DebugConsole(options) {
         if (this.eventFilter[event] != hide) {
             this.eventFilter[event] = hide;
             this.callEvent('settings', 'eventFilter', event, hide);
+            onConsoleShow(); // update console
         }
 
         return this;
@@ -338,6 +340,7 @@ function DebugConsole(options) {
         if (this.sourceFilter[source] != hide) {
             this.sourceFilter[source] = hide;
             this.callEvent('settings', 'sourceFilter', source, hide);
+            onConsoleShow(); // update console
         }
 
         return this;
