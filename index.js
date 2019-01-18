@@ -361,8 +361,14 @@ function DebugConsole(options) {
         return this;
     };
 
-
     this.msgToString = function(msg, ignoreFilter) {
+        var text = (msg.message && ((ignoreFilter || !this.fieldFilter.message))) ? msg.message : '';
+        text = this.msgToInfoString(msg, ignoreFilter) + text;
+
+        return text;
+    };
+
+    this.msgToInfoString = function(msg, ignoreFilter) {
         var timestamp = '';
         if (!this.fieldFilter.timestamp) {
             timestamp = msg.timestamp;
@@ -381,10 +387,21 @@ function DebugConsole(options) {
         var event = (ignoreFilter || !this.fieldFilter.event) ? ((msg.event ? msg.event : '') + 
                 ' '.repeat(this.fieldSizes.event)).slice(0, this.fieldSizes.event) : '';
 
-        var text = (msg.message && ((ignoreFilter || !this.fieldFilter.message))) ? msg.message : '';
-        text = timestamp + event + source + text;
+        return timestamp + event + source;
+    };
 
-        return text;
+    this.calculateMessageOffset = function(ignoreFilter) {
+        var timestamp = '';
+        if (!this.fieldFilter.timestamp) {
+            timestamp = (' '.repeat(this.fieldSizes.timestamp)).slice(0, this.fieldSizes.timestamp);
+        }
+
+        var source = (ignoreFilter || !this.fieldFilter.source) ? 
+            (' '.repeat(this.fieldSizes.source)).slice(0, this.fieldSizes.source) : '';
+        var event = (ignoreFilter || !this.fieldFilter.event) ? 
+            (' '.repeat(this.fieldSizes.event)).slice(0, this.fieldSizes.event) : '';
+
+        return (timestamp + event + source).length;
     };
 
 
@@ -415,6 +432,10 @@ function DebugConsole(options) {
 
     // eslint-disable-next-line no-unused-vars
     this.updateConsole = function(msg) {
+        function getLineCount(s) {
+            return s.split(/\r\n|\r|\n/).length;
+        }
+        
         if (!that.debugPage) {
             return;
         }
@@ -424,32 +445,44 @@ function DebugConsole(options) {
             return;
         }
 
+        var offset = this.calculateMessageOffset();
+        var columnsCount = this.columnsCount ? this.columnsCount - offset : null;
+        if (columnsCount <= 0) { columnsCount = null; }
+
+
         var count = this.getMessageCount();
         var lineCount = 0;
         var index = 0;
         var text = '';
 
+        var lines = [];
+        var re = this.columnsCount ? 
+            new RegExp('(.{1,' + this.columnsCount + '})', 'g') : ''; // Regular expression example: /(.{1,80})/g
 
-        while ((lineCount < this.lineCount) && (index < count)) {
-            var m = this.getMessage(count - index - 1);
-            var msgText = this.msgToString(m);
-            index++;
-            if (this.columnsCount) {
-                var re = new RegExp('(.{1,' + this.columnsCount + '})', 'g');
-                var textArr = msgText ? msgText.match(re) : [];
-                for (var i = textArr.length-1; i >=0 ; i--) {
 
-                    if (!(m.event && this.eventFilter[m.event]) && !(m.source && this.sourceFilter[m.source])) {
-                        text = textArr[i] + '\n' + text;
-                        lineCount++;
+        var isFirst = true;
+        while (lineCount < this.lineCount) {
+            if (lines.length == 0) {
+                if (index >= count) { break; }
+                var m = this.getMessage(count - index - 1);
+                index++;
+                var isLegit = !(m.event && this.eventFilter[m.event]) && !(m.source && this.sourceFilter[m.source]);
+                if (!isLegit) { continue; }
+
+                lines = (this.msgToString(m) || '').split(/\r\n|\r|\n/); // check if message has line breaks
+                isFirst = true;
+  
+                if (this.columnsCount) {
+                    for (var j = lines.length - 1; j >=0; j--) {
+                        // split each lines into a number of lines depending on the line length and the insert into lines
+                        lines = lines.slice(0, j).concat((lines[j] || '').match(re), lines.slice(j+1));
                     }
                 }
-            } else {
-                if (!(m.event && this.eventFilter[m.event]) && !(m.source && this.sourceFilter[m.source])) {
-                    text = msgText + '\n' + text;
-                    lineCount++; 
-                }
             }
+            var msgText = lines.pop();
+            text = msgText + '\n' + text;
+            lineCount++; 
+            isFirst = false;
         }
 
         console.Text = text;
