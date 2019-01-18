@@ -370,7 +370,7 @@ function DebugConsole(options) {
 
     this.msgToInfoString = function(msg, ignoreFilter) {
         var timestamp = '';
-        if (!this.fieldFilter.timestamp) {
+        if (!this.fieldFilter.timestamp || ignoreFilter) {
             timestamp = msg.timestamp;
             if (timestamp) {
                 if (typeof timestamp != 'string') {
