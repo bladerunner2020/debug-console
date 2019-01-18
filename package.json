@@ -1,6 +1,6 @@
 {
   "name": "debug-console",
-  "version": "2.3.2",
+  "version": "2.3.3",
   "description": "Debug console for Iridium mobile (i3pro)",
   "main": "index.js",
   "scripts": {

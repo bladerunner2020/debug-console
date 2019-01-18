@@ -391,17 +391,7 @@ function DebugConsole(options) {
     };
 
     this.calculateMessageOffset = function(ignoreFilter) {
-        var timestamp = '';
-        if (!this.fieldFilter.timestamp) {
-            timestamp = (' '.repeat(this.fieldSizes.timestamp)).slice(0, this.fieldSizes.timestamp);
-        }
-
-        var source = (ignoreFilter || !this.fieldFilter.source) ? 
-            (' '.repeat(this.fieldSizes.source)).slice(0, this.fieldSizes.source) : '';
-        var event = (ignoreFilter || !this.fieldFilter.event) ? 
-            (' '.repeat(this.fieldSizes.event)).slice(0, this.fieldSizes.event) : '';
-
-        return (timestamp + event + source).length;
+        return (this.msgToInfoString({})).length;
     };
 
 
@@ -449,6 +439,7 @@ function DebugConsole(options) {
         var columnsCount = this.columnsCount ? this.columnsCount - offset : null;
         if (columnsCount <= 0) { columnsCount = null; }
 
+        var empty = ' '.repeat(offset);
 
         var count = this.getMessageCount();
         var lineCount = 0;
@@ -456,11 +447,8 @@ function DebugConsole(options) {
         var text = '';
 
         var lines = [];
-        var re = this.columnsCount ? 
-            new RegExp('(.{1,' + this.columnsCount + '})', 'g') : ''; // Regular expression example: /(.{1,80})/g
+        var re = columnsCount ? new RegExp('(.{1,' + columnsCount + '})', 'g') : ''; // Regular expression example: /(.{1,80})/g
 
-
-        var isFirst = true;
         while (lineCount < this.lineCount) {
             if (lines.length == 0) {
                 if (index >= count) { break; }
@@ -469,10 +457,9 @@ function DebugConsole(options) {
                 var isLegit = !(m.event && this.eventFilter[m.event]) && !(m.source && this.sourceFilter[m.source]);
                 if (!isLegit) { continue; }
 
-                lines = (this.msgToString(m) || '').split(/\r\n|\r|\n/); // check if message has line breaks
-                isFirst = true;
+                lines = (m.message || '').split(/\r\n|\r|\n/); // check if message has line breaks
   
-                if (this.columnsCount) {
+                if (columnsCount) {
                     for (var j = lines.length - 1; j >=0; j--) {
                         // split each lines into a number of lines depending on the line length and the insert into lines
                         lines = lines.slice(0, j).concat((lines[j] || '').match(re), lines.slice(j+1));
@@ -480,9 +467,10 @@ function DebugConsole(options) {
                 }
             }
             var msgText = lines.pop();
-            text = msgText + '\n' + text;
+            if (msgText == '') { continue; }
+
+            text = lines.length ? (empty + msgText + '\n' + text) : this.msgToInfoString(m) + msgText + '\n' + text;
             lineCount++; 
-            isFirst = false;
         }
 
         console.Text = text;
