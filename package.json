@@ -1,8 +1,8 @@
 {
   "name": "debug-console",
-  "version": "2.3.4",
+  "version": "2.3.5",
   "description": "Debug console for Iridium mobile (i3pro)",
-  "main": "index.js",
+  "main": "debug-console.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
