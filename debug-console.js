@@ -1,6 +1,4 @@
 // DebugConsole - outputs debug messages to special page debug console
-
-/* eslint no-unused-vars: */
 /*global IR*/
 
 function RingBuffer(length) {
@@ -162,21 +160,23 @@ function DebugConsole(options) {
         this.registerListener(onItemPressed, {itemName: 'ShowMessage', path: ['fieldFilter', 'message']});
     }
     
-    function onConsoleShow() {
-        that.active = true;
-        that.updateConsole();
+    function onConsoleShow(notChangeActive) {
+        if (!notChangeActive) {
+            that.active = true;
+        }
 
-        var page = that.debugPage;
-
-        initButtonValue(page, 'PlayPause', that.active);
-        initButtonValue(page, 'ShowDebug', !that.eventFilter.debug);
-        initButtonValue(page, 'ShowInfo', !that.eventFilter.info);
-        initButtonValue(page, 'ShowWarning', !that.eventFilter.warning);
-        initButtonValue(page, 'ShowError', !that.eventFilter.error);
-        initButtonValue(page, 'ShowTimestamp', !that.fieldFilter.timestamp);
-        initButtonValue(page, 'ShowEvent', !that.fieldFilter.event);
-        initButtonValue(page, 'ShowSource', !that.fieldFilter.source);
-        initButtonValue(page, 'ShowMessage', !that.fieldFilter.message);     
+        if (that.active) {
+            that.updateConsole();
+            initButtonValue(that.debugPage, 'PlayPause', that.active);
+            initButtonValue(that.debugPage, 'ShowDebug', !that.eventFilter.debug);
+            initButtonValue(that.debugPage, 'ShowInfo', !that.eventFilter.info);
+            initButtonValue(that.debugPage, 'ShowWarning', !that.eventFilter.warning);
+            initButtonValue(that.debugPage, 'ShowError', !that.eventFilter.error);
+            initButtonValue(that.debugPage, 'ShowTimestamp', !that.fieldFilter.timestamp);
+            initButtonValue(that.debugPage, 'ShowEvent', !that.fieldFilter.event);
+            initButtonValue(that.debugPage, 'ShowSource', !that.fieldFilter.source);
+            initButtonValue(that.debugPage, 'ShowMessage', !that.fieldFilter.message);    
+        } 
     }
 
     function onConsoleHide() {
@@ -317,11 +317,10 @@ function DebugConsole(options) {
     };
     
     this.showField = function (field, show) {
-
         if (this.fieldFilter[field] != !show) {
             this.fieldFilter[field] = !show;
             this.callEvent('settings', 'showField', field, show);
-            onConsoleShow(); // update console
+            onConsoleShow(true); // update console
         }
         return this;
     };
@@ -330,7 +329,7 @@ function DebugConsole(options) {
         if (this.eventFilter[event] != hide) {
             this.eventFilter[event] = hide;
             this.callEvent('settings', 'eventFilter', event, hide);
-            onConsoleShow(); // update console
+            onConsoleShow(true); // update console
         }
 
         return this;
@@ -340,7 +339,7 @@ function DebugConsole(options) {
         if (this.sourceFilter[source] != hide) {
             this.sourceFilter[source] = hide;
             this.callEvent('settings', 'sourceFilter', source, hide);
-            onConsoleShow(); // update console
+            onConsoleShow(true); // update console
         }
 
         return this;
@@ -537,14 +536,9 @@ function DebugConsole(options) {
 }
 
 // Necessary to use in IridiumMobile
-if (typeof IR === 'object') {
-    var exports = {};
-}
-
-exports.DebugConsole = DebugConsole;
-
-// Necessary to use in IridiumMobile
 if ((typeof IR === 'object') && (typeof module === 'object')) {
-    module['debug-console'] = exports;
+    module['debug-console'] = {
+        DebugConsole: DebugConsole    
+    };
     exports = undefined;
 } 
