@@ -1,15 +1,22 @@
 {
   "name": "debug-console",
-  "version": "2.3.5",
+  "version": "2.4.0",
   "description": "Debug console for Iridium mobile (i3pro)",
   "main": "debug-console.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
+  },
+  "jest": {
+    "testEnvironment": "node"
   },
   "author": "Alexander Pivovarov aka bladerunner2020 (pivovarov@gmail.com)",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
-    "grunt": "^1.0.1",
-    "grunt-bump": "^0.8.0"
+    "@babel/core": "^7.4.4",
+    "@babel/preset-env": "^7.4.4",
+    "babel-jest": "^24.7.1",
+    "eslint": "^5.15.1",
+    "jest": "^24.7.1",
+    "jest-date-mock": "^1.0.7"
   }
 }
