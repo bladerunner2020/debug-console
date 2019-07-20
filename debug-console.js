@@ -15,7 +15,7 @@ function RingBuffer(length) {
     };
 
     this.get = function (key) {
-        if (key == undefined) {
+        if (typeof key === 'undefined') {
             return this.buffer[this.pointer - 1];
         }
         var index = (this.pointer + key) % this.length;
@@ -270,7 +270,7 @@ function DebugConsole(options) {
             return;
         }
         
-        if (typeof msg == 'string') {
+        if (typeof msg === 'string') {
             var msgObj = {};
             msgObj.message = msg;
             msgObj.event = 'info';
@@ -308,7 +308,7 @@ function DebugConsole(options) {
 
         if (!this.noConsoleLog) {
             var event = '';
-            if (msg.event && msg.event != 'info') {
+            if (msg.event && msg.event !== 'info') {
                 event = msg.event.toUpperCase() + ': ';
             }
 
@@ -372,7 +372,7 @@ function DebugConsole(options) {
         if (!this.fieldFilter.timestamp || ignoreFilter) {
             timestamp = msg.timestamp;
             if (timestamp) {
-                if (typeof timestamp != 'string') {
+                if (typeof timestamp !== 'string') {
                     timestamp = timestamp.toString();
                 }
             } else {
